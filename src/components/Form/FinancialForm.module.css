@@ -1,0 +1,21 @@
+.horizontalContainer {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+}
+
+.horizontalContainer > div {
+  flex: 1;
+}
+
+@media (max-width: 480px) {
+  .horizontalContainer {
+    gap: 10px;
+  }
+
+  .horizontalContainer > div {
+    flex: 1 1 45%;
+  }
+}

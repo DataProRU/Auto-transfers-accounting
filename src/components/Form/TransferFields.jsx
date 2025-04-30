@@ -1,0 +1,57 @@
+import styles from "./FinancialForm.module.css";
+import Select from "../../UI/Select/Select";
+import Input from "../../UI/Input/Input";
+import Textarea from "../../UI/Textarea/Textarea";
+
+function TransferFields({ formData, handleChange, wallets }) {
+  return (
+    <>
+      <div className={styles.horizontalContainer}>
+        <div id="wallet_from">
+          <Select
+            label="Кошелёк (откуда):"
+            id="wallet_from_select"
+            name="wallet_from"
+            value={formData.walletFrom}
+            onChange={handleChange("walletFrom")}
+            options={wallets}
+            placeholder="Выберите кошелёк"
+          />
+        </div>
+        <div id="wallet_to">
+          <Select
+            label="Кошелёк (куда):"
+            id="wallet_to_select"
+            name="wallet_to"
+            value={formData.walletTo}
+            onChange={handleChange("walletTo")}
+            options={wallets}
+            placeholder="Выберите кошелёк"
+          />
+        </div>
+      </div>
+
+      <Input
+        label="Сумма:"
+        id="amount"
+        name="amount"
+        type="number"
+        value={formData.amount}
+        onChange={(e) => handleChange("amount")(e.target.value)}
+        placeholder="Введите сумму"
+        required
+      />
+
+      <Textarea
+        label="Назначение платежа:"
+        id="comment"
+        name="comment"
+        value={formData.comment}
+        onChange={(e) => handleChange("comment")(e.target.value)}
+        placeholder="Введите комментарий"
+      />
+    </>
+  );
+}
+
+export default TransferFields;

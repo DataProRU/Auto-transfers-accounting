@@ -1,10 +1,9 @@
-import styles from "./Input.module.css";
+import styles from "./Textarea.module.css";
 
-function Input({
+function Textarea({
   label,
   id,
   name,
-  type,
   value,
   onChange,
   placeholder,
@@ -15,18 +14,17 @@ function Input({
       <label htmlFor={id} className={styles.label}>
         {label}
       </label>
-      <input
+      <textarea
         id={id}
         name={name}
-        type={type}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className={styles.input}
+        className={styles.textarea}
         required={required}
       />
     </div>
   );
 }
 
-export default Input;
+export default Textarea;

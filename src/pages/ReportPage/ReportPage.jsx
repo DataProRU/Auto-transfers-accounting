@@ -1,12 +1,11 @@
-import Form from "../../components/Form/Form";
+import FinancialForm from "../../components/Form/FinancialForm";
 import Header from "../../components/Header/Header";
 
 const ReportPage = () => {
   return (
     <div>
       <Header />
-
-      <Form />
+      <FinancialForm />
     </div>
   );
 };
