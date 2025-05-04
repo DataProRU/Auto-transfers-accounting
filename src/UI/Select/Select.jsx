@@ -1,39 +1,42 @@
 import ReactSelect from "react-select";
 import styles from "./Select.module.css";
 
+// Кастомные стили для react-select
 const customStyles = {
   control: (provided) => ({
     ...provided,
     width: "100%",
     padding: "6px",
-    marginBottom: "15px",
+    marginBottom: "0px",
     border: "1px solid #ddd",
-    borderRadius: "8px",
-    fontSize: "14px",
-    backgroundColor: "#f9f9f9",
+    borderRadius: "4px",
     boxSizing: "border-box",
-    transition: "border-color 0.1s, box-shadow 0.1s",
-    "&:hover": {
-      borderColor: "#007BFF",
-    },
-    boxShadow: "none",
+
+    fontSize: "14px",
+    color: "#000",
+
+    backgroundColor: "#fff",
+
+    cursor: "pointer",
+
+    transition: "border-color 0.3s, box-shadow 0.3s",
   }),
   input: (provided) => ({
     ...provided,
-    color: "#555",
+    color: "#000",
   }),
   singleValue: (provided) => ({
     ...provided,
-    color: "#555",
+    color: "#000",
   }),
   placeholder: (provided) => ({
     ...provided,
-    color: "#555",
+    color: "#aaa",
   }),
   menu: (provided) => ({
     ...provided,
-    borderRadius: "8px",
-    backgroundColor: "#f9f9f9",
+    borderRadius: "4px",
+    backgroundColor: "#fff",
   }),
   option: (provided, state) => ({
     ...provided,
@@ -41,9 +44,9 @@ const customStyles = {
       ? "#007BFF"
       : state.isFocused
       ? "#e6f0ff"
-      : "#f9f9f9",
-    color: state.isSelected ? "#fff" : "#555",
-    cursor: "pointer",
+      : "#fff",
+    color: state.isDisabled ? "#aaa" : state.isSelected ? "#fff" : "#000",
+    cursor: state.isDisabled ? "not-allowed" : "pointer",
     "&:active": {
       backgroundColor: "#007BFF",
       color: "#fff",
@@ -75,7 +78,7 @@ function Select({
   isSearchable = false,
 }) {
   return (
-    <div>
+    <div className={styles.distance}>
       <label htmlFor={id} className={styles.label}>
         {label}
       </label>

@@ -1,57 +1,71 @@
 .label {
-  font-weight: 500;
   margin-bottom: 5px;
   display: block;
-  color: #555;
+
+  font-weight: 500;
+  color: #000;
+}
+
+.inputWrapper {
+  position: relative;
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
 }
 
 .input {
   width: 100%;
   padding: 12px;
-  margin-bottom: 15px;
+  margin-bottom: 0px;
   border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-  background-color: #f9f9f9;
+  border-radius: 4px;
   box-sizing: border-box;
-  transition: border-color 0.3s, box-shadow 0.3s;
+
+  font-size: 14px;
+  color: #000;
+
+  background-color: #fff;
+
 }
 
 .input:focus {
   border-color: #007bff;
-  box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+  
+
   background-color: #fff;
   outline: none;
 }
 
-.input[type="date"] {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-  padding: 12px;
-  width: 100%;
-  box-sizing: border-box;
-  color: #555;
+.dateInput {
   cursor: pointer;
+  padding-right: 40px;
 }
 
-.input[type="date"]:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
-  background-color: #fff;
-  outline: none;
+.dateContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.calendarIcon {
+  position: absolute;
+  right: 10px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  pointer-events: none;
 }
 
 .input[type="number"]::-webkit-inner-spin-button,
 .input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
   margin: 0;
+  -webkit-appearance: none;
 }
 
 .input[type="number"] {
   -moz-appearance: textfield;
+}
+
+#amount {
+  background-color: #fff;
 }

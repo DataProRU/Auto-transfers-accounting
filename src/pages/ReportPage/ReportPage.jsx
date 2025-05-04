@@ -1,13 +1,13 @@
+import styles from "./ReportPage.module.css";
 import FinancialForm from "../../components/Form/FinancialForm";
 import Header from "../../components/Header/Header";
-
-const ReportPage = () => {
+function ReportPage() {
   return (
-    <div>
+    <div className={styles.formContainer}>
       <Header />
       <FinancialForm />
     </div>
   );
-};
+}
 
 export default ReportPage;

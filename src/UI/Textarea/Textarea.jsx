@@ -10,20 +10,15 @@ function Textarea({
   required = false,
 }) {
   return (
-    <div>
-      <label htmlFor={id} className={styles.label}>
-        {label}
-      </label>
-      <textarea
-        id={id}
-        name={name}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className={styles.textarea}
-        required={required}
-      />
-    </div>
+    <textarea
+      id={id}
+      name={name}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      className={styles.textarea}
+      required={required}
+    />
   );
 }
 

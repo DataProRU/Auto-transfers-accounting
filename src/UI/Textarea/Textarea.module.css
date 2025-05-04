@@ -1,8 +1,9 @@
 .label {
-  font-weight: 500;
   margin-bottom: 5px;
   display: block;
-  color: #555;
+
+  font-weight: 500;
+  color: #000;
 }
 
 .textarea {
@@ -10,17 +11,30 @@
   padding: 12px;
   margin-bottom: 10px;
   border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-  background-color: #f9f9f9;
+  border-radius: 4px;
   box-sizing: border-box;
+
+  font-size: 14px;
+  color: #000;
+
+  background-color: #fff;
+
   transition: border-color 0.3s, box-shadow 0.3s;
   resize: vertical;
 }
 
 .textarea:focus {
   border-color: #007bff;
-  box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+
   background-color: #fff;
   outline: none;
+}
+
+#comment {
+  background-color: #fff;
+}
+
+.distance {
+  margin-bottom: 8px;
 }

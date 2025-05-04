@@ -9,46 +9,46 @@ function TransferFields({ formData, handleChange, wallets }) {
       <div className={styles.horizontalContainer}>
         <div id="wallet_from">
           <Select
-            label="Кошелёк (откуда):"
+            label=""
             id="wallet_from_select"
             name="wallet_from"
             value={formData.walletFrom}
             onChange={handleChange("walletFrom")}
             options={wallets}
-            placeholder="Выберите кошелёк"
+            placeholder="Кошелёк (откуда):"
           />
         </div>
         <div id="wallet_to">
           <Select
-            label="Кошелёк (куда):"
+            label=""
             id="wallet_to_select"
             name="wallet_to"
             value={formData.walletTo}
             onChange={handleChange("walletTo")}
             options={wallets}
-            placeholder="Выберите кошелёк"
+            placeholder="Кошелёк (куда):"
           />
         </div>
       </div>
 
       <Input
-        label="Сумма:"
+        label=""
         id="amount"
         name="amount"
         type="number"
         value={formData.amount}
         onChange={(e) => handleChange("amount")(e.target.value)}
-        placeholder="Введите сумму"
+        placeholder="Сумма"
         required
       />
 
       <Textarea
-        label="Назначение платежа:"
+        label=""
         id="comment"
         name="comment"
         value={formData.comment}
         onChange={(e) => handleChange("comment")(e.target.value)}
-        placeholder="Введите комментарий"
+        placeholder="Назначение платежа"
       />
     </>
   );

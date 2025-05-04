@@ -1,12 +1,12 @@
-import useFinancialForm from "../../hooks/useFinancialForm";
+import styles from "./FinancialForm.module.css";
 import Input from "../../UI/Input/Input";
 import Select from "../../UI/Select/Select";
-import styles from "./FinancialForm.module.css";
-import NonTransferFields from "./NonTransferFields";
-import TransferFields from "./TransferFields";
-import Loader from "../../UI/Loader/Loader";
 import Button from "../../UI/Button/Button";
+import Loader from "../../UI/Loader/Loader";
 import SuccessMessage from "../../UI/SuccessMessage/SuccessMessage";
+import TransferFields from "./TransferFields";
+import NonTransferFields from "./NonTransferFields";
+import  useFinancialForm  from "../../hooks/useFinancialForm";
 
 function FinancialForm() {
   const {
@@ -28,17 +28,18 @@ function FinancialForm() {
     <div style={{ position: "relative" }}>
       <form className={styles.form} onSubmit={handleSubmit}>
         <Input
-          label="Дата:"
+          label=""
           id="date"
           name="date"
           type="date"
           value={formData.date}
-          onChange={(e) => handleChange("date")(e.target.value)}
+          onChange={(value) => handleChange("date")(value)}
+          placeholder="Выберите дату"
           required
         />
 
         <Select
-          label="Вид операции:"
+          label=""
           id="operation_type"
           name="operation_type"
           value={formData.operationType}

@@ -17,7 +17,7 @@ function NonTransferFields({
       <div className={styles.horizontalContainer}>
         <div>
           <Select
-            label="Категория:"
+            label=""
             id="accounting_type"
             name="accounting_type"
             value={formData.accountingType}
@@ -30,7 +30,7 @@ function NonTransferFields({
         </div>
         <div>
           <Select
-            label="Статья:"
+            label=""
             id="account_type"
             name="account_type"
             value={formData.accountType}
@@ -44,31 +44,32 @@ function NonTransferFields({
       </div>
 
       <Input
-        label="Дата назначения:"
+        label=""
         id="date_finish"
         name="date_finish"
         type="date"
         value={formData.dateFinish}
-        onChange={(e) => handleChange("dateFinish")(e.target.value)}
+        onChange={(value) => handleChange("dateFinish")(value)}
+        placeholder="Выберите дату назначения"
         required
       />
 
       <div className={styles.horizontalContainer}>
         <div>
           <Input
-            label="Сумма:"
+            label=" "
             id="amount"
             name="amount"
             type="number"
             value={formData.amount}
-            onChange={(e) => handleChange("amount")(e.target.value)}
+            onChange={(value) => handleChange("amount")(value)}
             placeholder="Введите сумму"
             required
           />
         </div>
         <div>
           <Select
-            label="Валюта:"
+            label=""
             id="currency"
             name="currency"
             value={formData.currency}
@@ -82,7 +83,7 @@ function NonTransferFields({
       </div>
 
       <Select
-        label="Способ оплаты:"
+        label=""
         id="payment_type"
         name="payment_type"
         value={formData.paymentType}
@@ -94,7 +95,7 @@ function NonTransferFields({
       />
 
       <Textarea
-        label="Назначение платежа:"
+        label=""
         id="comment"
         name="comment"
         value={formData.comment}
@@ -104,7 +105,7 @@ function NonTransferFields({
 
       <div id="wallet">
         <Select
-          label="Кошелёк:"
+          label=""
           id="wallet_select"
           name="wallet"
           value={formData.wallet}
