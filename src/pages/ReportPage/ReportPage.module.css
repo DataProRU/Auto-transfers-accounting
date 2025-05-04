@@ -1,0 +1,11 @@
+.formContainer {
+  position: relative;
+  top: 0;
+  left: 0;
+
+  padding:  0;
+  width: 100%;
+  overflow: hidden;
+
+  background-color: rgb(181, 181, 181);
+}

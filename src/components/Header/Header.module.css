@@ -1,0 +1,23 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding:  30px;
+  border-radius: 0 0 16px 16px;
+
+  background-color: #ffffff;
+  width: 100%;
+  margin: 0 auto 8px auto;
+}
+
+.header img {
+  margin-right: 15px;
+  height: 60px;
+}
+
+.title {
+  font-size: 22px;
+  color: #0b225c;
+  text-align: center;
+}

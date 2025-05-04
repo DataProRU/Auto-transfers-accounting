@@ -1,0 +1,36 @@
+.form {
+  max-width: 100%;
+  display: flex;
+  gap: 8px;
+  flex-direction: column;
+  padding: 20px 15px;
+
+  background-color: rgb(255, 255, 255);
+  border-radius: 8px 8px 0 0;
+}
+
+.horizontalContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  gap: 10px;
+}
+
+.horizontalContainer > div {
+  flex: 1;
+}
+
+.distance {
+  margin-bottom: 8px;
+}
+
+@media (max-width: 480px) {
+  .horizontalContainer {
+    gap: 8px;
+  }
+
+  .horizontalContainer > div {
+    flex: 1 1 45%;
+  }
+}

@@ -1,0 +1,25 @@
+.loader {
+  position: absolute;
+  top: 50%;
+  left: 40%;
+
+  display: none;
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+
+  transform: translate(-50%, -50%);
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
