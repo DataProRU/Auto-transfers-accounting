@@ -1,9 +1,9 @@
-import SelectField from "@/ui/select-field";
 import React from "react";
+import SelectField from "@/ui/select-field";
 
 interface TransferFormProps {
   formData: { wallet_from: string; wallet_to: string };
-  wallets: { name: string; username: string }[];
+  wallets: { id: number; name: string; username: string }[];
   handleChange: (name: string, value: string) => void;
 }
 
@@ -12,9 +12,10 @@ const TransferForm: React.FC<TransferFormProps> = ({
   wallets,
   handleChange,
 }) => {
-  const walletOptions = wallets.map((w) => ({
-    value: w.name,
-    label: `${w.username}`,
+  const walletOptions = wallets.map((w, index) => ({
+    value: String(w.id),
+    label: `${w.name} (${w.username})`,
+    key: `${w.id}-${index}`,
   }));
 
   return (
@@ -23,7 +24,7 @@ const TransferForm: React.FC<TransferFormProps> = ({
         name="wallet_from"
         value={formData.wallet_from}
         options={walletOptions}
-        placeholder="Кошелёк (откуда)"
+        placeholder="Кошелёк (откуда) *"
         onChange={handleChange}
         required
         className="w-full text-sm text-black placeholder:text-gray-400 truncate"
@@ -32,7 +33,7 @@ const TransferForm: React.FC<TransferFormProps> = ({
         name="wallet_to"
         value={formData.wallet_to}
         options={walletOptions}
-        placeholder="Кошелёк (куда)"
+        placeholder="Кошелёк (куда) *"
         onChange={handleChange}
         required
         className="w-full text-sm text-black placeholder:text-gray-400 truncate"

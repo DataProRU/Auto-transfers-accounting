@@ -1,9 +1,27 @@
 export interface Wallet {
+  id: number;
   name: string;
-  username: string;
+  user_id: number; // Изменено с username на user_id
+}
+
+export interface Company {
+  id: number;
+  name: string;
+  categories: {
+    id: number;
+    name: string;
+    operation_id: number;
+    articles: { id: number; title: string }[];
+  }[];
+}
+
+export interface Counterparty {
+  id: number;
+  full_name: string;
 }
 
 export interface FormData {
+  status: string;
   company: string;
   date: string;
   operation: string;
@@ -18,6 +36,7 @@ export interface FormData {
   currency: string;
   wallet: string;
   username: string;
+  counterparty: string;
 }
 
 export interface ReportState {
@@ -26,12 +45,13 @@ export interface ReportState {
   wallets: Wallet[];
   categoryArticles: Record<string, string[]>;
   operationCategories: Record<string, string[]>;
-  paymentTypes: { name: string }[];
+  paymentTypes: { id: number; name: string }[];
+  currencies: ICurrency[];
+  companies: Company[];
+  counterparties: Counterparty[];
   loading: boolean;
   success: boolean;
   error: string | null;
-  companies: string[]; 
-  currencies: ICurrency[];
 }
 
 export interface ICurrency {

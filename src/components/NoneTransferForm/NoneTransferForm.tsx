@@ -25,9 +25,9 @@ const NoneTransferForm: React.FC<NoneTransferFormProps> = ({
   const selectedOperation = operations.find(
     (op) => op.id === Number(formData.operation)
   );
-  const operationName = selectedOperation?.name || "";
+  const operationId = selectedOperation ? String(selectedOperation.id) : "";
   const categoryOptions = Array.from(
-    new Set(operationCategories[operationName] || [])
+    new Set(operationCategories[operationId] || [])
   ).map((cat, index) => ({
     value: cat,
     label: cat,
@@ -58,6 +58,7 @@ const NoneTransferForm: React.FC<NoneTransferFormProps> = ({
           placeholder="Категория"
           onChange={handleChange}
           required
+          className="w-full text-sm text-black placeholder:text-gray-400"
         />
         <SelectField
           name="article"
@@ -66,6 +67,7 @@ const NoneTransferForm: React.FC<NoneTransferFormProps> = ({
           placeholder="Статья"
           onChange={handleChange}
           required
+          className="w-full text-sm text-black placeholder:text-gray-400"
         />
       </div>
       <div className="date-wrapper mb-3.5">

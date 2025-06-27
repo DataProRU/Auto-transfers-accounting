@@ -17,6 +17,8 @@ const initialFormData: FormData = {
   wallet_to: "",
   wallet: "",
   company: "",
+  counterparty: "",
+  status: ""
 };
 
 const initialState: ReportState = {
@@ -28,6 +30,7 @@ const initialState: ReportState = {
   paymentTypes: [],
   currencies: [],
   companies: [],
+  counterparties: [], 
   loading: false,
   success: false,
   error: null,
@@ -77,7 +80,8 @@ const reportSlice = createSlice({
         state.operationCategories = action.payload.operationCategories || {};
         state.paymentTypes = action.payload.paymentTypes || [];
         state.currencies = action.payload.currencies || [];
-        state.companies = action.payload.companies || []; // Добавляем companies
+        state.companies = action.payload.companies || [];
+        state.counterparties = action.payload.counterparties || []; 
       })
       .addCase(fetchInitialData.rejected, (state, action) => {
         state.loading = false;

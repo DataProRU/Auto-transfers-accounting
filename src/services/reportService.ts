@@ -14,16 +14,72 @@ export const fetchInitialData = createAsyncThunk<
   try {
     const response = await $api.get<IInitialDataResponse>("/get_form_data");
     const { data } = response;
+
+    const companies = data.companies.map((c) => ({
+      id: c.id,
+      name: c.name,
+      categories: c.categories.map((cat: any) => ({
+        id: cat.id,
+        name: cat.name,
+        operation_id: cat.operation_id,
+        articles: cat.articles.map((art: any) => ({
+          id: art.id,
+          title: art.title,
+        })),
+      })),
+    }));
+
+    const counterparties = data.counterparties.map((c) => ({
+      id: c.id,
+      full_name: c.full_name,
+    }));
+
+    const operationCategories: Record<string, string[]> = {};
+    data.companies.forEach((company) => {
+      company.categories.forEach(
+        (category: { operation_id: any; name: string }) => {
+          const opId = String(category.operation_id);
+          if (!operationCategories[opId]) {
+            operationCategories[opId] = [];
+          }
+          if (!operationCategories[opId].includes(category.name)) {
+            operationCategories[opId].push(category.name);
+          }
+        }
+      );
+    });
+
+    const categoryArticles: Record<string, string[]> = {};
+    data.companies.forEach((company) => {
+      company.categories.forEach(
+        (category: { name: string | number; articles: any[] }) => {
+          categoryArticles[category.name] = category.articles.map(
+            (article) => article.title
+          );
+        }
+      );
+    });
+
     return {
       ...data,
+      companies,
+      counterparties,
       wallets: data.wallets.map((w) => ({
+        id: w.id,
         name: w.name,
-        username: w.username,
+        user_id: w.user_id,
       })),
-      categoryArticles: data.category_articles,
-      operationCategories: data.operation_categories,
+      categoryArticles,
+      operationCategories,
       paymentTypes: data.payment_types.map((pt) => ({
+        id: pt.id,
         name: pt.name,
+      })),
+      currencies: data.currencies.map((c) => ({
+        id: c.id,
+        code: c.code,
+        name: c.name,
+        symbol: c.symbol,
       })),
     };
   } catch (error: unknown) {
@@ -41,28 +97,154 @@ export const fetchInitialData = createAsyncThunk<
 
 export const submitForm = createAsyncThunk<
   void,
-  FormData & { operations: { id: number; name: string }[] },
+  FormData & {
+    operations: { id: number; name: string }[];
+    wallets: { id: number; name: string; user_id: number }[];
+    companies: {
+      id: number;
+      name: string;
+      categories: {
+        id: number;
+        name: string;
+        operation_id: number;
+        articles: { id: number; title: string }[];
+      }[];
+    }[];
+    currencies: { id: number; code: string; name: string; symbol: string }[];
+    counterparties: { id: number; full_name: string }[];
+    username: string;
+  },
   { rejectValue: string }
 >(
   "report/submitForm",
-  async ({ operations, ...formData }, { rejectWithValue }) => {
+  async (
+    {
+      operations,
+      wallets,
+      companies,
+      currencies,
+      counterparties,
+      username,
+      ...formData
+    },
+    { rejectWithValue }
+  ) => {
     try {
+      console.log("submitForm called with:", {
+        formData,
+        operations,
+        wallets,
+        companies,
+        currencies,
+        counterparties,
+        username,
+      });
+
       const operation = operations.find(
         (op) => op.id === Number(formData.operation)
       );
+      let categoryId: number | null = null;
+      let articleId: number | null = null;
+      if (formData.category && formData.article) {
+        for (const company of companies) {
+          const category = company.categories.find(
+            (cat) => cat.name === formData.category
+          );
+          if (category) {
+            categoryId = category.id;
+            const article = category.articles.find(
+              (art) => art.title === formData.article
+            );
+            if (article) {
+              articleId = article.id;
+            }
+            break;
+          }
+        }
+      }
+
+      const currency = currencies.find((cur) => cur.code === formData.currency);
+      const currencyId = currency ? currency.id : null;
+
+      let userId = 0;
+      if (operation?.name === "Перемещение") {
+        const walletFrom = wallets.find(
+          (w) => w.id === Number(formData.wallet_from)
+        );
+        userId = walletFrom ? walletFrom.user_id : 0;
+      } else if (
+        operation?.name === "Выставить счёт" ||
+        operation?.name === "Выставить расход"
+      ) {
+        userId = 0;
+      } else {
+        const wallet = wallets.find((w) => w.id === Number(formData.wallet));
+        userId = wallet ? wallet.user_id : 0;
+      }
+
+      const counterpartyId = formData.counterparty
+        ? Number(formData.counterparty)
+        : 0;
+      console.log("Mapped counterparty_id:", counterpartyId);
+
       const payload: ISubmitPayload = {
-        ...formData,
-        operation: operation ? operation.name : "",
+        username: "admin",
+        company_id: formData.company ? Number(formData.company) : 0,
+        operation_id: formData.operation ? Number(formData.operation) : 0,
+        date: formData.date || "",
         amount: parseFloat(formData.amount) || 0,
-        currency: formData.currency || "",
-        wallet_from: formData.wallet_from || "",
-        wallet_to: formData.wallet_to || "",
+        category_id: categoryId,
+        article_id: articleId,
+        finish_date: formData.date_finish || "",
+        payment_type_id: formData.payment_type
+          ? Number(formData.payment_type)
+          : 0,
+        comment: formData.comment || "",
+        wallet_id: formData.wallet ? Number(formData.wallet) : 0,
+        wallet_from_id: formData.wallet_from ? Number(formData.wallet_from) : 0,
+        wallet_to_id: formData.wallet_to ? Number(formData.wallet_to) : 0,
+        counterparty_id: counterpartyId,
+        currency_id: currencyId,
       };
 
-      await $api.post<ISubmitPayload, void>("/submit", payload, {
-        headers: { "Content-Type": "application/json" },
-      });
+      if (
+        operation?.name !== "Выставить счёт" &&
+        operation?.name !== "Выставить расход" &&
+        !payload.username
+      ) {
+        console.error("Validation failed: user_id is missing or invalid");
+        return rejectWithValue("user_id обязателен и должен быть числом");
+      }
+      if (!payload.currency_id) {
+        console.error("Validation failed: currency_id is missing");
+        return rejectWithValue("currency_id обязателен и должен быть числом");
+      }
+      if (
+        (operation?.name === "Выставить счёт" ||
+          operation?.name === "Выставить расход") &&
+        !payload.counterparty_id
+      ) {
+        console.error(
+          "Validation failed: counterparty_id is missing or invalid for operation",
+          operation?.name
+        );
+        return rejectWithValue(
+          "counterparty_id обязателен для операций 'Выставить счёт' и 'Выставить расход'"
+        );
+      }
+
+      const response = await $api.post<ISubmitPayload, void>(
+        "/submit",
+        payload,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      console.log("API response:", response);
+
+      return response;
     } catch (error: unknown) {
+      console.error("submitForm error:", error);
       if (error instanceof Error && "response" in error) {
         const axiosError = error as {
           response?: { data?: { message?: string } };
@@ -71,7 +253,7 @@ export const submitForm = createAsyncThunk<
           axiosError.response?.data?.message || "Ошибка при отправке формы"
         );
       }
-      return rejectWithValue("Ошибка при отправке формы");
+      return rejectWithValue("Ошибка при отправке формы: " + String(error));
     }
   }
 );
