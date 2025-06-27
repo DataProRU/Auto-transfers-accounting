@@ -1,9 +1,11 @@
 import React from "react";
 import { DatePicker } from "@/ui/date-picker";
 import SelectField from "@/ui/select-field";
+import type { Company } from "@/types/types";
 
 interface NoneTransferFormProps {
   formData: {
+    company: string; // Добавляем company в formData
     category: string;
     article: string;
     date_finish: string;
@@ -12,6 +14,7 @@ interface NoneTransferFormProps {
   operations: { id: number; name: string }[];
   operationCategories: Record<string, string[]>;
   categoryArticles: Record<string, string[]>;
+  companies: Company[]; // Добавляем companies в пропсы
   handleChange: (name: string, value: string) => void;
 }
 
@@ -20,26 +23,40 @@ const NoneTransferForm: React.FC<NoneTransferFormProps> = ({
   operations,
   operationCategories,
   categoryArticles,
+  companies,
   handleChange,
 }) => {
   const selectedOperation = operations.find(
     (op) => op.id === Number(formData.operation)
   );
   const operationId = selectedOperation ? String(selectedOperation.id) : "";
-  const categoryOptions = Array.from(
-    new Set(operationCategories[operationId] || [])
-  ).map((cat, index) => ({
-    value: cat,
-    label: cat,
-    key: `${cat}-${index}`,
-  }));
-  const articleOptions = Array.from(
-    new Set(categoryArticles[formData.category] || [])
-  ).map((art, index) => ({
-    value: art,
-    label: art,
-    key: `${art}-${index}`,
-  }));
+
+  // Находим выбранную компанию
+  const selectedCompany = companies.find(
+    (company) => String(company.id) === formData.company
+  );
+
+  // Фильтруем категории только для выбранной компании и операции
+  const categoryOptions = selectedCompany
+    ? selectedCompany.categories
+        .filter((cat) => cat.operation_id === Number(operationId))
+        .map((cat, index) => ({
+          value: cat.name,
+          label: cat.name,
+          key: `${cat.name}-${index}`,
+        }))
+    : [];
+
+  // Формируем опции для статей на основе выбранной категории
+  const articleOptions = selectedCompany
+    ? selectedCompany.categories
+        .find((cat) => cat.name === formData.category)
+        ?.articles.map((art, index) => ({
+          value: art.title,
+          label: art.title,
+          key: `${art.title}-${index}`,
+        })) || []
+    : [];
 
   const handleDateChange = (selectedDate: Date | undefined) => {
     handleChange(

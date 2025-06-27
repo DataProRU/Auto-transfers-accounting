@@ -365,6 +365,11 @@ const ReportForm: React.FC = () => {
       selectedOperation?.name === "Выставить расход") &&
     areRequiredFieldsFilled;
 
+  useEffect(() => {
+    // Сбрасываем category и article при смене компании
+    dispatch(setFormDataField({ name: "category", value: "" }));
+    dispatch(setFormDataField({ name: "article", value: "" }));
+  }, [formData.company, dispatch]);
   return (
     <form
       onSubmit={handleSubmit}
@@ -411,6 +416,7 @@ const ReportForm: React.FC = () => {
           operations={operations}
           operationCategories={operationCategories}
           categoryArticles={categoryArticles}
+          companies={companies} // Передаём companies
           handleChange={handleChange}
         />
       )}
