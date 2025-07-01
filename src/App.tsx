@@ -1,11 +1,12 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "./hooks/hooks";
 import { logout } from "./store/slices/authSlice";
 import ReportFormPage from "./pages/ReportFormPage";
 import LoginPage from "./pages/LoginPage";
 import { checkToken } from "./services/authService";
 import { AxiosError } from "axios";
+import InvoicePage from "./pages/InvoicePage";
 
 function App() {
   const { isAuthenticated, username } = useAppSelector((state) => state.auth);
@@ -21,17 +22,17 @@ function App() {
     const checkAuth = async () => {
       if (!accessToken) {
         dispatch(logout());
-        navigate("/", { replace: true });
+        navigate("/tg_bot_add", { replace: true });
         return;
       }
 
       try {
         await checkToken(accessToken);
-      } catch (error: unknown) {
+      } catch (error) {
         if (error instanceof AxiosError && error.response?.status === 401) {
           localStorage.removeItem("access_token");
           dispatch(logout());
-          navigate("/", { replace: true });
+          navigate("/tg_bot_add", { replace: true });
         } else {
           console.error("Token check failed:", error);
         }
@@ -39,19 +40,25 @@ function App() {
     };
 
     checkAuth();
-    const intervalId = setInterval(checkAuth, 3 * 60 * 1000);
+    const intervalId = setInterval(checkAuth, 7 * 60 * 1000); 
 
     return () => clearInterval(intervalId);
   }, [navigate, dispatch]);
 
   return (
-    <>
-      {isAuthenticated && username === url_name ? (
-        <ReportFormPage />
+    <Routes>
+      {isAuthenticated ? (
+        <>
+          <Route
+            path="/tg_bot_add"
+            element={username === url_name ? <ReportFormPage /> : <LoginPage />}
+          />
+          <Route path="/tg_bot_add/invoice" element={<InvoicePage />} />
+        </>
       ) : (
-        <LoginPage />
+        <Route path="*" element={<LoginPage />} />
       )}
-    </>
+    </Routes>
   );
 }
 

@@ -16,16 +16,21 @@ const initialFormData: FormData = {
   wallet_from: "",
   wallet_to: "",
   wallet: "",
+  company: "",
+  counterparty: "",
+  status: "",
 };
 
 const initialState: ReportState = {
   formData: initialFormData,
-  operations: [],
+  operation_types: [], // Изменено с operations
   wallets: [],
   categoryArticles: {},
   operationCategories: {},
   paymentTypes: [],
   currencies: [],
+  companies: [],
+  counterparties: [],
   loading: false,
   success: false,
   error: null,
@@ -60,7 +65,6 @@ const reportSlice = createSlice({
     setSuccess: (state, action: PayloadAction<boolean>) => {
       state.success = action.payload;
     },
-    
   },
   extraReducers: (builder) => {
     builder
@@ -70,12 +74,14 @@ const reportSlice = createSlice({
       })
       .addCase(fetchInitialData.fulfilled, (state, action) => {
         state.loading = false;
-        state.operations = action.payload.operations || [];
+        state.operation_types = action.payload.operation_types || [];
         state.wallets = action.payload.wallets || [];
         state.categoryArticles = action.payload.categoryArticles || {};
         state.operationCategories = action.payload.operationCategories || {};
         state.paymentTypes = action.payload.paymentTypes || [];
         state.currencies = action.payload.currencies || [];
+        state.companies = action.payload.companies || [];
+        state.counterparties = action.payload.counterparties || [];
       })
       .addCase(fetchInitialData.rejected, (state, action) => {
         state.loading = false;
