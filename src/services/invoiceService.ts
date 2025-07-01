@@ -17,8 +17,8 @@ export const fetchInvoices = async (): Promise<InvoiceResponse> => {
 
 export const fetchInvoicePdf = async (invoiceId: number): Promise<string> => {
   try {
-    const response = await axios.get(
-      `${API_URL}/api/financial_operation/${invoiceId}/pdf`,
+    const response = await $api.get(
+      `/api/financial_operation/${invoiceId}/pdf`,
       { responseType: "blob" }
     );
     if (response.data.type !== "application/pdf") {
@@ -64,7 +64,7 @@ export const markInvoiceAsPaid = async (
   walletId: number
 ): Promise<void> => {
   try {
-    await axios.patch(`${API_URL}/api/invoices/${invoiceId}/pay`, {
+    await $api.patch(`/api/invoices/${invoiceId}/pay`, {
       is_paid: true,
       wallet_id: walletId,
     });

@@ -266,7 +266,7 @@ const ReportForm: React.FC = () => {
     ) {
       setIsModalOpen(true);
     } else if (success) {
-      const timer = setTimeout(() => dispatch(setSuccess(false)), 2000);
+      const timer = setTimeout(() => dispatch(setSuccess(false)), 3000);
       return () => clearTimeout(timer);
     }
   }, [success, dispatch, operation_types, formData.operation]);
@@ -324,6 +324,10 @@ const ReportForm: React.FC = () => {
       return;
     }
 
+    const selectedOperation = operation_types.find(
+      (op) => op.id === Number(formData.operation)
+    );
+
     try {
       await dispatch(
         submitForm({
@@ -337,36 +341,37 @@ const ReportForm: React.FC = () => {
         })
       ).unwrap();
 
-      // Получаем список всех счетов
-      const invoiceResponse = await fetchInvoices();
-      const invoices = invoiceResponse.items || [];
+      if (
+        selectedOperation?.name === "Выставить счёт" ||
+        selectedOperation?.name === "Выставить расход"
+      ) {
+        const invoiceResponse = await fetchInvoices();
+        const invoices = invoiceResponse.items || [];
 
-      // Находим последний счет по максимальному id
-      const latestInvoice = invoices.reduce(
-        (latest: Invoice | null, current: Invoice) => {
-          if (!latest || current.id > latest.id) {
-            return current;
-          }
-          return latest;
-        },
-        null
-      );
-
-      if (latestInvoice) {
-        console.log("Latest invoice:", latestInvoice);
-        setCreatedInvoice(latestInvoice);
-        setIsModalOpen(true);
-      } else {
-        console.error("Не удалось найти последний счет");
-        dispatch(
-          setFormDataField({
-            name: "error",
-            value: "Не удалось загрузить созданный счет",
-          })
+        const latestInvoice = invoices.reduce(
+          (latest: Invoice | null, current: Invoice) => {
+            if (!latest || current.id > latest.id) {
+              return current;
+            }
+            return latest;
+          },
+          null
         );
-      }
 
-      await refreshInvoices();
+        if (latestInvoice) {
+          setCreatedInvoice(latestInvoice);
+          setIsModalOpen(true);
+        } else {
+          dispatch(
+            setFormDataField({
+              name: "error",
+              value: "Не удалось загрузить созданный счет",
+            })
+          );
+        }
+
+        await refreshInvoices();
+      }
     } catch (err) {
       dispatch(setFormDataField({ name: "error", value: String(err) }));
     }
@@ -473,7 +478,7 @@ const ReportForm: React.FC = () => {
             formData.date_finish ? new Date(formData.date_finish) : undefined
           }
           onChange={handleDateChange}
-          disabled={false}
+          disabled={true}
           className={
             validationErrors.date_finish ? "border-red-500" : "text-black"
           }
