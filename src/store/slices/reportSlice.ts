@@ -23,7 +23,7 @@ const initialFormData: FormData = {
 
 const initialState: ReportState = {
   formData: initialFormData,
-  operation_types: [], // Изменено с operations
+  operation_types: [], 
   wallets: [],
   categoryArticles: {},
   operationCategories: {},

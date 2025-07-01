@@ -293,7 +293,7 @@ const ReportForm: React.FC = () => {
 
   const handleDateChange = (date: Date | undefined) => {
     if (date) {
-      handleChange("date_finish", date.toISOString().split("T")[0]);
+      handleChange("date", date.toISOString().split("T")[0]);
     }
   };
 
@@ -465,7 +465,7 @@ const ReportForm: React.FC = () => {
       <SelectField
         name="company"
         value={formData.company}
-        options={companyOptions}
+        options={companyOptions} 
         placeholder="Компания *"
         onChange={handleChange}
         required
@@ -474,16 +474,13 @@ const ReportForm: React.FC = () => {
       />
       <div className="relative mb-3.5">
         <DatePicker
-          value={
-            formData.date_finish ? new Date(formData.date_finish) : undefined
-          }
+          value={formData.date ? new Date(formData.date) : undefined}
           onChange={handleDateChange}
-          disabled={true}
           className={
-            validationErrors.date_finish ? "border-red-500" : "text-black"
+            validationErrors.date ? "border-red-500" : "text-black"
           }
         />
-        {validationErrors.date_finish && <ErrorMessage />}
+        {validationErrors.date && <ErrorMessage />}
       </div>
       <SelectField
         name="operation"
