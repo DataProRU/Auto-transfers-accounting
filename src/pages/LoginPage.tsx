@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { authService } from "@/services/authService";
-import { useAppDispatch } from "@/hooks/hooks";
-import { login } from "@/store/slices/authSlice";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import { loginUser, clearError } from "@/store/slices/authSlice";
+import { selectAuthLoading, selectAuthError, selectIsAuthenticated } from "@/store/selectors/authSelectors";
 import { Input } from "@/ui/input";
 import { Button } from "@/ui/button";
 import { z } from "zod";
@@ -25,12 +25,32 @@ const LoginPage: React.FC = () => {
     password?: string;
     general?: string;
   }>({});
+  
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  
+  const loading = useAppSelector(selectAuthLoading);
+  const authError = useAppSelector(selectAuthError);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+
+  // Очистка ошибок при изменении полей
+  useEffect(() => {
+    if (authError) {
+      setErrors({ general: authError });
+    }
+  }, [authError]);
+
+  // Редирект если уже авторизован
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(`/tg_bot_add?username=${username}`);
+    }
+  }, [isAuthenticated, username, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
+    dispatch(clearError());
 
     const result = loginSchema.safeParse({ username, password });
 
@@ -44,13 +64,10 @@ const LoginPage: React.FC = () => {
     }
 
     try {
-      const { access_token } = await authService.login({ username, password });
-      dispatch(login({ username, access_token }));
+      await dispatch(loginUser({ username, password })).unwrap();
       navigate(`/tg_bot_add?username=${username}`);
     } catch (err) {
-      setErrors({
-        general: err instanceof Error ? err.message : "Ошибка авторизации",
-      });
+      // Ошибка уже обработана в slice
     }
   };
 
@@ -108,8 +125,12 @@ const LoginPage: React.FC = () => {
             </p>
           )}
         </div>
-        <Button type="submit" className="w-full text-sm sm:text-base">
-          Войти
+        <Button 
+          type="submit" 
+          className="w-full text-sm sm:text-base"
+          disabled={loading}
+        >
+          {loading ? "Вход..." : "Войти"}
         </Button>
       </form>
     </div>
