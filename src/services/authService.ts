@@ -21,7 +21,9 @@ export const authService = {
           },
         }
       );
-
+      const token = response.data.access_token;
+      localStorage.setItem("access_token", token);
+      document.cookie = `token=${token}; path=/;`;
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {

@@ -1,14 +1,21 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useAppDispatch } from "@/hooks/hooks";
-import type { Invoice } from "@/types/invoiceTypes";
-import { fetchInvoicePdf } from "@/services/invoiceService";
-import { copyToClipboard, downloadPdf } from "@/lib/invoiceUtils";
-import PdfViewer from "@/components/PdfViewer/PdfViewer";
 import { X } from "lucide-react";
+
+import type { Invoice } from "@/types/invoiceTypes";
+
 import { Button } from "@/ui/button";
 import Toast from "@/ui/toast";
+import Modal from "@/ui/Modal";
+import PdfViewer from "@/components/PdfViewer/PdfViewer";
 import WalletSelectionModal from "./WalletSelectionModal";
+
+import { useAppDispatch } from "@/hooks/hooks";
+
+import { fetchInvoicePdf } from "@/services/invoiceService";
+import { copyToClipboard, downloadPdf } from "@/lib/invoiceUtils";
+
 import { setFormDataField } from "@/store/slices/reportSlice";
+import { openWalletSelection } from "@/store/slices/walletSelectionSlice";
 
 interface CounterpartyModalProps {
   isOpen: boolean;
@@ -29,8 +36,6 @@ const CounterpartyModal: React.FC<CounterpartyModalProps> = ({
   const [pdfLoading, setPdfLoading] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showToast, setShowToast] = useState(false);
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-
   useEffect(() => {
     setIsMobile(/Mobi|Android|iPhone/i.test(navigator.userAgent));
 
@@ -42,8 +47,10 @@ const CounterpartyModal: React.FC<CounterpartyModalProps> = ({
       try {
         const url = await fetchInvoicePdf(invoice.id);
         setPdfUrl(url);
-      } catch (error: any) {
-        setPdfError(error.message);
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Не удалось загрузить PDF";
+        setPdfError(errorMessage);
       } finally {
         setPdfLoading(false);
       }
@@ -64,93 +71,94 @@ const CounterpartyModal: React.FC<CounterpartyModalProps> = ({
   }, [pdfUrl]);
 
   const handleOpenWalletModal = useCallback(() => {
-    setIsWalletModalOpen(true);
-  }, []);
+    const isContractor = invoice?.operation_type.name === "Выставить счёт";
+    if (invoice) {
+      dispatch(
+        openWalletSelection({
+          invoiceId: invoice.id,
+          isContractor: isContractor,
+        })
+      );
+    }
+  }, [dispatch, invoice]);
 
   const handleWalletModalConfirm = useCallback(() => {
     dispatch(setFormDataField({ name: "status", value: "Оплачен" }));
-    setIsWalletModalOpen(false);
     onClose();
   }, [dispatch, onClose]);
 
-  const handleWalletModalClose = useCallback(() => {
-    setIsWalletModalOpen(false);
-  }, []);
-
   if (!isOpen || !invoice) return null;
 
-  const isContractor = invoice.operation_type.name === "Выставить счёт";
-
   return (
-    <div
-      className="fixed inset-0 bg-gray-800/60 flex items-center justify-center z-50 px-4"
-      onClick={onClose}
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      className="w-full max-w-4xl max-h-[90vh] overflow-auto relative p-4 m-4"
     >
-      <div
-        className="bg-white p-4 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-auto relative"
-        onClick={(e) => e.stopPropagation()}
+      <button
+        className="absolute top-2 right-2 text-black text-2xl"
+        onClick={onClose}
+        aria-label="Закрыть модальное окно"
       >
-        <button
-          className="absolute top-2 right-2 text-black text-2xl"
-          onClick={onClose}
-          aria-label="Закрыть модальное окно"
-        >
-          <X className="size-6 bg-white" />
-        </button>
-        <h2 className="text-lg md:text-xl font-bold mb-4 text-gray-900">
-          Счет №{invoice.id}
-        </h2>
+        <X className="size-6 bg-white" />
+      </button>
+      <h2 className="text-lg md:text-xl font-bold mb-4 text-gray-900">
+        Счет №{invoice.id}
+      </h2>
+      {!isMobile ? (
         <PdfViewer
           pdfUrl={pdfUrl}
           pdfError={pdfError}
           pdfLoading={pdfLoading}
           isMobile={isMobile}
         />
-        <div className="mt-4 flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0 justify-center">
-          <Button
-            variant="blue"
-            size="default"
-            className="w-full sm:w-auto font-light"
-            onClick={handleCopyLink}
-            disabled={!pdfUrl}
-          >
-            Скопировать ссылку
-          </Button>
-          <Button
-            variant="gray"
-            size="default"
-            className="w-full sm:w-auto font-light"
-            onClick={() =>
-              pdfUrl && downloadPdf(pdfUrl, `invoice-${invoice.id}.pdf`)
-            }
-            disabled={!pdfUrl}
-          >
-            Скачать PDF
-          </Button>
-          <Button
-            variant="green"
-            size="default"
-            className="w-full sm:w-auto font-light"
-            onClick={handleOpenWalletModal}
-          >
-            Отметить оплаченным
-          </Button>
+      ) : (
+        <div className="my-4 text-center text-gray-500">
+          <div className="mb-2">
+            Предпросмотр PDF не поддерживается на мобильных устройствах.
+          </div>
         </div>
-        <Toast
-          message="Ссылка скопирована!"
-          isVisible={showToast}
-          onClose={() => setShowToast(false)}
-        />
-        <WalletSelectionModal
-          isOpen={isWalletModalOpen}
-          onClose={handleWalletModalClose}
-          invoiceId={invoice.id}
-          isContractor={isContractor}
-          refreshInvoices={refreshInvoices}
-          onConfirm={handleWalletModalConfirm}
-        />
+      )}
+      <div className="mt-4 flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0 justify-center">
+        <Button
+          variant="blue"
+          size="default"
+          className="w-full sm:w-auto font-light"
+          onClick={handleCopyLink}
+          disabled={!pdfUrl}
+        >
+          Скопировать ссылку
+        </Button>
+        <Button
+          variant="gray"
+          size="default"
+          className="w-full sm:w-auto font-light"
+          onClick={() =>
+            pdfUrl && downloadPdf(pdfUrl, `invoice-${invoice.id}.pdf`)
+          }
+          disabled={!pdfUrl}
+        >
+          Скачать PDF
+        </Button>
+        <Button
+          variant="green"
+          size="default"
+          className="w-full sm:w-auto font-light"
+          onClick={handleOpenWalletModal}
+        >
+          Отметить оплаченным
+        </Button>
       </div>
-    </div>
+      <Toast
+        message="Ссылка скопирована!"
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+      />
+      <WalletSelectionModal
+        refreshInvoices={refreshInvoices}
+        onConfirm={handleWalletModalConfirm}
+      />
+    </Modal>
   );
 };
 

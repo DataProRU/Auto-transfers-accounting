@@ -38,7 +38,7 @@ const PdfViewer: React.FC<PdfViewerProps> = ({
   }
 
   if (!pdfUrl) {
-    return <p className="text-gray-500 text-center">PDF не доступен</p>;
+    return <p className="text-red-500 text-center">PDF не доступен</p>;
   }
 
   if (isMobile) {
@@ -58,19 +58,9 @@ const PdfViewer: React.FC<PdfViewerProps> = ({
       data={`${pdfUrl}#view=FitH&toolbar=0&navpanes=0&scrollbar=0`}
       type="application/pdf"
       width="100%"
-      className="min-h-[50vh] md:h-[600px] border rounded"
+      className="min-h-[50vh] md:h-[600px] border rounded is-mobile:h-[300px]"
     >
-      <p className="text-gray-500">
-        Ваш браузер не поддерживает просмотр PDF.{" "}
-        <a
-          href={pdfUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-500 underline"
-        >
-          Открыть PDF в новой вкладке
-        </a>
-      </p>
+      <p className="text-gray-500">Ваш браузер не поддерживает просмотр PDF</p>
     </object>
   );
 };

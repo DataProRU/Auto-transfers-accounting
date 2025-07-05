@@ -1,25 +1,58 @@
-import type { ICurrency } from "@/types/types";
+export interface Article {
+  id: number;
+  title: string;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  operation_type_id: number;
+  articles: Article[];
+}
+
+export interface Company {
+  id: number;
+  name: string;
+  phone: string;
+  address: string;
+  categories: Category[];
+}
+
+export interface OperationType {
+  id: number;
+  name: string;
+}
+
+export interface PaymentType {
+  id: number;
+  name: string;
+}
+
+export interface Wallet {
+  id: number;
+  name: string;
+  user_id: number;
+}
+
+export interface Currency {
+  id: number;
+  code: string;
+  name: string;
+  symbol: string;
+}
+
+export interface Counterparty {
+  id: number;
+  full_name: string;
+}
 
 export interface IInitialDataResponse {
-  operation_types: { id: number; name: string }[] | undefined;
-  username: string;
-  operations: { id: number; name: string }[];
-  wallets: { id: number; name: string; user_id: number }[];
-  category_articles: Record<string, string[]>;
-  operation_categories: Record<string, string[]>;
-  payment_types: { id: number; name: string }[];
-  currencies: ICurrency[];
-  companies: {
-    id: number;
-    name: string;
-    categories: {
-      id: number;
-      name: string;
-      operation_id: number;
-      articles: { id: number; title: string }[];
-    }[];
-  }[];
-  counterparties: { id: number; full_name: string; email: string }[];
+  companies: Company[];
+  operation_types: OperationType[];
+  payment_types: PaymentType[];
+  wallets: Wallet[];
+  currencies: Currency[];
+  counterparties: Counterparty[];
 }
 
 export interface ISubmitPayload {

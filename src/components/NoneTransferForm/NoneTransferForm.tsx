@@ -1,7 +1,7 @@
 import React from "react";
 import { DatePicker } from "@/ui/date-picker";
 import SelectField from "@/ui/select-field";
-import ErrorMessage from "@/ui/error-message"; // Import ErrorMessage component
+import ErrorMessage from "@/ui/error-message"; 
 import type { Company } from "@/types/types";
 
 interface NoneTransferFormProps {

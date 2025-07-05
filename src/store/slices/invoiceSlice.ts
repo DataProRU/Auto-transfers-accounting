@@ -3,8 +3,20 @@ import {
   createAsyncThunk,
   type PayloadAction,
 } from "@reduxjs/toolkit";
-import { fetchInvoices as fetchInvoicesService } from "@/services/invoiceService";
+
 import type { InvoiceState, InvoiceResponse } from "@/types/invoiceTypes";
+
+import { fetchInvoices as fetchInvoicesService } from "@/services/invoiceService";
+
+
+interface SetViewPayload {
+  view: "contractors" | "expenses" | null;
+}
+
+interface SetInvoicesPayload {
+  invoices: InvoiceResponse;
+}
+
 
 const initialState: InvoiceState = {
   view: null,
@@ -18,8 +30,9 @@ export const fetchInvoices = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       return await fetchInvoicesService();
-    } catch (error: any) {
-      return rejectWithValue(error.message || "Не удалось загрузить счета");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Не удалось загрузить счета";
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -28,11 +41,11 @@ const invoiceSlice = createSlice({
   name: "invoice",
   initialState,
   reducers: {
-    setView(state, action: PayloadAction<"contractors" | "expenses" | null>) {
-      state.view = action.payload;
+    setView(state, action: PayloadAction<SetViewPayload>) {
+      state.view = action.payload.view;
     },
-    setInvoices(state, action: PayloadAction<InvoiceResponse>) {
-      state.invoices = action.payload;
+    setInvoices(state, action: PayloadAction<SetInvoicesPayload>) {
+      state.invoices = action.payload.invoices;
       state.loading = false;
       state.error = null;
     },

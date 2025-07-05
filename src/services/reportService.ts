@@ -1,10 +1,12 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { ReportState, FormData } from "../types/types";
-import { $api } from "@/setup/http/http";
+
+import type { ReportState, FormData, Company, OperationType, Wallet, Currency, Counterparty } from "../types/types";
 import type {
   IInitialDataResponse,
   ISubmitPayload,
 } from "@/models/response/ReportResponse";
+
+import { $api } from "@/setup/http/http";
 
 export const fetchInitialData = createAsyncThunk<
   Partial<ReportState>,
@@ -18,11 +20,13 @@ export const fetchInitialData = createAsyncThunk<
     const companies = data.companies.map((c) => ({
       id: c.id,
       name: c.name,
-      categories: c.categories.map((cat: any) => ({
+      phone: c.phone,
+      address: c.address,
+      categories: c.categories.map((cat) => ({
         id: cat.id,
         name: cat.name,
         operation_type_id: cat.operation_type_id,
-        articles: cat.articles.map((art: any) => ({
+        articles: cat.articles.map((art) => ({
           id: art.id,
           title: art.title,
         })),
@@ -52,7 +56,7 @@ export const fetchInitialData = createAsyncThunk<
     const categoryArticles: Record<string, string[]> = {};
     data.companies.forEach((company) => {
       company.categories.forEach(
-        (category: { name: string | number; articles: any[] }) => {
+        (category: { name: string | number; articles: { id: number; title: string }[] }) => {
           categoryArticles[category.name] = category.articles.map(
             (article) => article.title
           );
@@ -99,20 +103,11 @@ export const fetchInitialData = createAsyncThunk<
 export const submitForm = createAsyncThunk<
   void,
   FormData & {
-    operation_types: { id: number; name: string }[];
-    wallets: { id: number; name: string; user_id: number }[];
-    companies: {
-      id: number;
-      name: string;
-      categories: {
-        id: number;
-        name: string;
-        operation_type_id: number;
-        articles: { id: number; title: string }[];
-      }[];
-    }[];
-    currencies: { id: number; code: string; name: string; symbol: string }[];
-    counterparties: { id: number; full_name: string }[];
+    operation_types: OperationType[];
+    wallets: Wallet[];
+    companies: Company[];
+    currencies: Currency[];
+    counterparties: Counterparty[];
     username: string;
   },
   { rejectValue: string }
@@ -171,15 +166,17 @@ export const submitForm = createAsyncThunk<
         ? Number(formData.counterparty)
         : 0;
 
+      const isTransfer = operation?.name === "Перемещение";
+
       const payload: ISubmitPayload = {
         username: localStorage.getItem("username") || "",
         company_id: formData.company ? Number(formData.company) : 0,
         operation_type_id: formData.operation ? Number(formData.operation) : 0,
         date: formData.date || "",
         amount: parseFloat(formData.amount) || 0,
-        category_id: categoryId,
-        article_id: articleId,
-        finish_date: formData.date_finish || "",
+        category_id: isTransfer ? null : categoryId,
+        article_id: isTransfer ? null : articleId,
+        finish_date: isTransfer ? "" : formData.date_finish || "",
         payment_type_id: formData.payment_type
           ? Number(formData.payment_type)
           : 0,

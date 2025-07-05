@@ -11,7 +11,7 @@ export const formatInvoiceData = (invoices: Invoice[]): CurrentData => ({
   amount:
     invoices.length > 0
       ? `${invoices.reduce((sum, item) => sum + item.amount, 0)} ${
-          invoices[0].currency.symbol || "KGS"
+          invoices[0].currency.symbol || ""
         }`
       : "0 KGS",
   items: invoices.map((invoice, index) => ({
@@ -28,7 +28,7 @@ export const copyToClipboard = async (text: string): Promise<void> => {
     await navigator.clipboard.writeText(text);
   } catch (error) {
     console.error("Ошибка копирования:", error);
-    alert("Ссылка скопирована!"); // Fallback for older browsers
+    alert("Ссылка скопирована!");
   }
 };
 

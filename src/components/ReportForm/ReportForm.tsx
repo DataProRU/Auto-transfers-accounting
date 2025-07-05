@@ -1,64 +1,89 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import type { Invoice } from "@/types/invoiceTypes";
+import type { FormData } from "@/types/types";
+
 import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 import { Textarea } from "@/ui/textarea";
 import { DatePicker } from "@/ui/date-picker";
 import ErrorMessage from "@/ui/error-message";
 import SelectField from "@/ui/select-field";
+import SuccessMessage from "@/ui/success-message";
+import Loader from "@/ui/loader";
+
+import TransferForm from "../TransferForm/TransferForm";
+import NoneTransferForm from "../NoneTransferForm/NoneTransferForm";
+import CounterpartyModal from "../Modals/CounterpartyModal";
+
+import { getValidationSchema } from "@/lib/validationSchemas";
+
+import { fetchInitialData, submitForm } from "@/services/reportService";
+import { fetchInvoices } from "@/services/invoiceService";
+
 import {
   setFormDataField,
   resetAccountingFields,
   resetAccountType,
   setSuccess,
+  clearError,
 } from "@/store/slices/reportSlice";
-import { fetchInitialData, submitForm } from "@/services/reportService";
-import { fetchInvoices } from "@/services/invoiceService";
-import TransferForm from "../TransferForm/TransferForm";
-import NoneTransferForm from "../NoneTransferForm/NoneTransferForm";
-import SuccessMessage from "@/ui/success-message";
-import Loader from "@/ui/loader";
-import { z } from "zod";
-import CounterpartyModal from "../Modals/CounterpartyModal";
-import type { Invoice } from "@/types/invoiceTypes";
-import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
-
-const baseSchema = z.object({
-  company: z.string().min(1, "Компания обязательна"),
-  operation: z.string().min(1, "Вид операции обязателен"),
-  amount: z
-    .string()
-    .min(1, "Сумма обязательна")
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-      message: "Сумма должна быть положительным числом",
-    }),
-  currency: z.string().min(1, "Валюта обязательна"),
-  payment_type: z.string().min(1, "Способ оплаты обязателен"),
-  date_finish: z.string().min(1, "Дата обязательна"),
-  comment: z.string().optional(),
-  wallet: z.string().optional(),
-  wallet_from: z.string().optional(),
-  wallet_to: z.string().optional(),
-  category: z.string().optional(),
-  article: z.string().optional(),
-  counterparty: z.string().optional(),
-});
+import {
+  selectFormData,
+  selectOperationTypes,
+  selectWallets,
+  selectCategoryArticles,
+  selectOperationCategories,
+  selectCurrencies,
+  selectCompanies,
+  selectCounterparties,
+  selectLoading,
+  selectSuccess,
+  selectError,
+  selectSelectedOperation,
+  selectIsFormValid,
+  selectShowCounterpartyField,
+  selectShowTransferForm,
+  selectShowSuccessMessage,
+  selectOperationOptions,
+  selectPaymentOptions,
+  selectReportWalletOptions,
+  selectCurrencyOptions,
+  selectCompanyOptions,
+  selectCounterpartyOptions,
+} from "@/store/selectors/reportSelectors";
 
 const ReportForm: React.FC = () => {
   const dispatch = useAppDispatch();
-  const {
-    formData,
-    operation_types,
-    wallets,
-    categoryArticles,
-    operationCategories,
-    paymentTypes,
-    currencies,
-    companies,
-    counterparties,
-    loading,
-    success,
-    error,
-  } = useAppSelector((state) => state.report);
+
+  // Используем селекторы вместо прямого обращения к состоянию
+  const formData = useAppSelector(selectFormData);
+  const operation_types = useAppSelector(selectOperationTypes);
+  const wallets = useAppSelector(selectWallets);
+  const categoryArticles = useAppSelector(selectCategoryArticles);
+  const operationCategories = useAppSelector(selectOperationCategories);
+
+  const currencies = useAppSelector(selectCurrencies);
+  const companies = useAppSelector(selectCompanies);
+  const counterparties = useAppSelector(selectCounterparties);
+  const loading = useAppSelector(selectLoading);
+  const success = useAppSelector(selectSuccess);
+  const error = useAppSelector(selectError);
+
+  // Вычисляемые селекторы
+  const selectedOperation = useAppSelector(selectSelectedOperation);
+  const isFormValid = useAppSelector(selectIsFormValid);
+  const showCounterpartyField = useAppSelector(selectShowCounterpartyField);
+  const showTransferForm = useAppSelector(selectShowTransferForm);
+  const showSuccessMessage = useAppSelector(selectShowSuccessMessage);
+
+  // Селекторы для опций
+  const operationOptions = useAppSelector(selectOperationOptions);
+  const paymentOptions = useAppSelector(selectPaymentOptions);
+  const walletOptions = useAppSelector(selectReportWalletOptions);
+  const currencyOptions = useAppSelector(selectCurrencyOptions);
+  const companyOptions = useAppSelector(selectCompanyOptions);
+  const counterpartyOptions = useAppSelector(selectCounterpartyOptions);
 
   const params = new URLSearchParams(location.search);
   const username = params.get("username") || "";
@@ -81,148 +106,6 @@ const ReportForm: React.FC = () => {
       console.error("Ошибка обновления счетов:", err);
     }
   }, []);
-
-  const createOptions = <T,>(
-    items: T[],
-    key: keyof T,
-    labelFn?: (item: T) => string
-  ) =>
-    items.map((item, index) => ({
-      value: String(item[key]),
-      label: labelFn ? labelFn(item) : String(item[key]),
-      key: `${String(item[key])}-${index}`,
-    }));
-
-  const getValidationSchema = () => {
-    const selectedOperation = operation_types.find(
-      (op) => op.id === Number(formData.operation)
-    );
-
-    if (selectedOperation?.name === "Перемещение") {
-      return z.object({
-        company: z.string().min(1, "Компания обязательна"),
-        operation: z.string().min(1, "Вид операции обязателен"),
-        amount: z
-          .string()
-          .min(1, "Сумма обязательна")
-          .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-            message: "Сумма должна быть положительным числом",
-          }),
-        currency: z.string().min(1, "Валюта обязательна"),
-        payment_type: z.string().min(1, "Способ оплаты обязателен"),
-        date_finish: z.string().min(1, "Дата обязательна"),
-        comment: z.string().optional(),
-        wallet_from: z.string().min(1, "Кошелёк отправителя обязателен"),
-        wallet_to: z.string().min(1, "Кошелёк получателя обязателен"),
-        wallet: z.string().optional(),
-        category: z.string().optional(),
-        article: z.string().optional(),
-        counterparty: z.string().optional(),
-      });
-    } else if (
-      selectedOperation?.name === "Выставить счёт" ||
-      selectedOperation?.name === "Выставить расход"
-    ) {
-      return z.object({
-        company: z.string().min(1, "Компания обязательна"),
-        operation: z.string().min(1, "Вид операции обязателен"),
-        amount: z
-          .string()
-          .min(1, "Сумма обязательна")
-          .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-            message: "Сумма должна быть положительным числом",
-          }),
-        currency: z.string().min(1, "Валюта обязательна"),
-        payment_type: z.string().min(1, "Способ оплаты обязателен"),
-        date_finish: z.string().min(1, "Дата обязательна"),
-        comment: z.string().optional(),
-        counterparty: z
-          .string()
-          .min(1, "Контрагент обязателен")
-          .refine((val) => counterparties.find((cp) => String(cp.id) === val), {
-            message: "Выберите действительного контрагента",
-          }),
-        wallet: z.string().optional(),
-        wallet_from: z.string().optional(),
-        wallet_to: z.string().optional(),
-        category: z.string().optional(),
-        article: z.string().optional(),
-      });
-    } else if (
-      selectedOperation?.name === "Приход" ||
-      selectedOperation?.name === "Расход"
-    ) {
-      const baseFields = {
-        company: z.string().min(1, "Компания обязательна"),
-        operation: z.string().min(1, "Вид операции обязателен"),
-        amount: z
-          .string()
-          .min(1, "Сумма обязательна")
-          .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-            message: "Сумма должна быть положительным числом",
-          }),
-        currency: z.string().min(1, "Валюта обязательна"),
-        payment_type: z.string().min(1, "Способ оплаты обязателен"),
-        date_finish: z.string().min(1, "Дата обязательна"),
-        comment: z.string().optional(),
-        wallet: z
-          .string()
-          .min(1, "Кошелёк обязателен")
-          .refine((val) => wallets.find((w) => String(w.id) === val), {
-            message: "Выберите действительный кошелёк",
-          }),
-        wallet_from: z.string().optional(),
-        wallet_to: z.string().optional(),
-        counterparty: z.string().optional(),
-      };
-
-      const shouldValidateCategory =
-        formData.category && formData.category !== "";
-      const shouldValidateArticle = formData.article && formData.article !== "";
-
-      if (shouldValidateCategory) {
-        const fieldsWithCategory = {
-          ...baseFields,
-          category: z
-            .string()
-            .min(1, "Категория обязательна")
-            .refine(
-              (val) =>
-                operationCategories[String(selectedOperation?.id)]?.includes(
-                  val
-                ),
-              { message: "Выберите действительную категорию" }
-            ),
-        };
-
-        if (shouldValidateArticle) {
-          return z.object({
-            ...fieldsWithCategory,
-            article: z
-              .string()
-              .min(1, "Статья обязательна")
-              .refine(
-                (val) => categoryArticles[formData.category]?.includes(val),
-                { message: "Выберите действительную статью" }
-              ),
-          });
-        } else {
-          return z.object({
-            ...fieldsWithCategory,
-            article: z.string().optional(),
-          });
-        }
-      } else {
-        return z.object({
-          ...baseFields,
-          category: z.string().optional(),
-          article: z.string().optional(),
-        });
-      }
-    }
-
-    return baseSchema;
-  };
 
   useEffect(() => {
     dispatch(fetchInitialData());
@@ -255,10 +138,6 @@ const ReportForm: React.FC = () => {
   }, [formData.category, categoryArticles, dispatch]);
 
   useEffect(() => {
-    const selectedOperation = operation_types.find(
-      (op) => op.id === Number(formData.operation)
-    );
-
     if (
       success &&
       (selectedOperation?.name === "Выставить счёт" ||
@@ -266,17 +145,17 @@ const ReportForm: React.FC = () => {
     ) {
       setIsModalOpen(true);
     } else if (success) {
-      const timer = setTimeout(() => dispatch(setSuccess(false)), 3000);
+      const timer = setTimeout(
+        () => dispatch(setSuccess({ success: false })),
+        2000
+      );
       return () => clearTimeout(timer);
     }
-  }, [success, dispatch, operation_types, formData.operation]);
+  }, [success, dispatch, selectedOperation]);
 
   useEffect(() => {
     if (error) {
-      const timer = setTimeout(
-        () => dispatch(setFormDataField({ name: "error", value: "" })),
-        3000
-      );
+      const timer = setTimeout(() => dispatch(clearError()), 3000);
       return () => clearTimeout(timer);
     }
   }, [error, dispatch]);
@@ -287,7 +166,7 @@ const ReportForm: React.FC = () => {
   }, [formData.company, dispatch]);
 
   const handleChange = (name: string, value: string) => {
-    dispatch(setFormDataField({ name, value }));
+    dispatch(setFormDataField({ name: name as keyof FormData, value }));
     setValidationErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
@@ -300,7 +179,14 @@ const ReportForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const validationSchema = getValidationSchema();
+    const validationSchema = getValidationSchema(
+      formData,
+      operation_types,
+      wallets,
+      counterparties,
+      operationCategories,
+      categoryArticles
+    );
 
     const result = validationSchema.safeParse(formData);
     if (!result.success) {
@@ -317,16 +203,12 @@ const ReportForm: React.FC = () => {
       );
       dispatch(
         setFormDataField({
-          name: "error",
+          name: "comment",
           value: "Заполните все обязательные поля корректно",
         })
       );
       return;
     }
-
-    const selectedOperation = operation_types.find(
-      (op) => op.id === Number(formData.operation)
-    );
 
     try {
       await dispatch(
@@ -364,7 +246,7 @@ const ReportForm: React.FC = () => {
         } else {
           dispatch(
             setFormDataField({
-              name: "error",
+              name: "comment",
               value: "Не удалось загрузить созданный счет",
             })
           );
@@ -373,90 +255,23 @@ const ReportForm: React.FC = () => {
         await refreshInvoices();
       }
     } catch (err) {
-      dispatch(setFormDataField({ name: "error", value: String(err) }));
+      dispatch(setFormDataField({ name: "comment", value: String(err) }));
     }
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
     setCreatedInvoice(null);
-    dispatch(setSuccess(false));
+    dispatch(setSuccess({ success: false }));
   };
 
-  const operationOptions = createOptions(
-    operation_types,
-    "id",
-    (op) => op.name
-  );
-  const paymentOptions = createOptions(paymentTypes, "id", (pt) => pt.name);
-  const walletOptions = createOptions(wallets, "id", (w) => `${w.name} `);
-  const currencyOptions = createOptions(currencies, "code", (c) => c.name);
-  const companyOptions = createOptions(companies, "id", (c) => c.name);
-  const counterpartyOptions = createOptions(
-    counterparties,
-    "id",
-    (cp) => cp.full_name
-  );
 
-  const selectedOperation = operation_types.find(
-    (op) => op.id === Number(formData.operation)
-  );
 
-  const isCounterpartyFieldVisible =
-    selectedOperation?.name === "Выставить расход" ||
-    selectedOperation?.name === "Выставить счёт";
+  const isTransfer = selectedOperation?.name === "Перемещение";
+  const isTransferValid =
+    formData.wallet_from.trim() !== "" && formData.wallet_to.trim() !== "";
 
-  const areRequiredFieldsFilled = (() => {
-    try {
-      const basicFields = [
-        formData.company,
-        formData.operation,
-        formData.amount,
-        formData.currency,
-        formData.payment_type,
-        formData.date_finish,
-      ];
-
-      const basicFieldsFilled = basicFields.every(
-        (field) => field && field.trim() !== ""
-      );
-
-      if (!basicFieldsFilled) return false;
-
-      const selectedOperation = operation_types.find(
-        (op) => op.id === Number(formData.operation)
-      );
-
-      if (selectedOperation?.name === "Перемещение") {
-        return (
-          formData.wallet_from &&
-          formData.wallet_to &&
-          formData.wallet_from.trim() !== "" &&
-          formData.wallet_to.trim() !== ""
-        );
-      } else if (
-        selectedOperation?.name === "Выставить счёт" ||
-        selectedOperation?.name === "Выставить расход"
-      ) {
-        return formData.counterparty && formData.counterparty.trim() !== "";
-      } else if (
-        selectedOperation?.name === "Приход" ||
-        selectedOperation?.name === "Расход"
-      ) {
-        return formData.wallet && formData.wallet.trim() !== "";
-      }
-
-      return true;
-    } catch (error) {
-      return false;
-    }
-  })();
-
-  const shouldShowSuccessMessage =
-    success &&
-    selectedOperation?.name !== "Выставить счёт" &&
-    selectedOperation?.name !== "Выставить расход";
-
+    
   return (
     <form
       onSubmit={handleSubmit}
@@ -465,7 +280,7 @@ const ReportForm: React.FC = () => {
       <SelectField
         name="company"
         value={formData.company}
-        options={companyOptions} 
+        options={companyOptions}
         placeholder="Компания *"
         onChange={handleChange}
         required
@@ -476,9 +291,7 @@ const ReportForm: React.FC = () => {
         <DatePicker
           value={formData.date ? new Date(formData.date) : undefined}
           onChange={handleDateChange}
-          className={
-            validationErrors.date ? "border-red-500" : "text-black"
-          }
+          className={validationErrors.date ? "border-red-500" : "text-black"}
         />
         {validationErrors.date && <ErrorMessage />}
       </div>
@@ -492,7 +305,7 @@ const ReportForm: React.FC = () => {
         error={validationErrors.operation}
         className="mb-3.5 w-full text-sm text-black placeholder:text-gray-400"
       />
-      {selectedOperation?.name === "Перемещение" ? (
+      {showTransferForm ? (
         <TransferForm
           formData={formData}
           wallets={wallets.map((wallet) => ({
@@ -552,7 +365,7 @@ const ReportForm: React.FC = () => {
         placeholder="Назначение платежа"
         className="my-1 min-h-[70px]"
       />
-      {isCounterpartyFieldVisible ? (
+      {showCounterpartyField ? (
         <SelectField
           name="counterparty"
           value={formData.counterparty}
@@ -582,13 +395,13 @@ const ReportForm: React.FC = () => {
       )}
       <Button
         type="submit"
-        disabled={loading || !areRequiredFieldsFilled}
+        disabled={loading || (isTransfer ? !isTransferValid : !isFormValid)}
         className="mb-3.5 w-full bg-[#25fcf1] hover:bg-[#25fcf1aa] text-black font-light p-5 rounded-[8px] text-sm sm:text-base"
       >
         Отправить
       </Button>
       {loading && <Loader />}
-      {shouldShowSuccessMessage && <SuccessMessage />}
+      {showSuccessMessage && <SuccessMessage />}
       {error && <ErrorMessage />}
       <CounterpartyModal
         isOpen={isModalOpen}

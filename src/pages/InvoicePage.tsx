@@ -31,7 +31,7 @@ const InvoicePage: React.FC = () => {
   useEffect(() => {
     const loadInvoices = async () => {
       try {
-        dispatch(setView("contractors"));
+        dispatch(setView({ view: "contractors" }));
         await refreshInvoices();
       } catch (err) {
         console.error("Ошибка загрузки счетов:", err);
@@ -65,14 +65,14 @@ const InvoicePage: React.FC = () => {
     );
     dispatch(
       setFormDataField({
-        name: "company_id",
+        name: "company",
         value: String(invoice.company.id),
       })
     );
-    dispatch(setFormDataField({ name: "date_from", value: invoice.date }));
-    dispatch(setFormDataField({ name: "date_to", value: invoice.finish_date }));
+    dispatch(setFormDataField({ name: "date", value: invoice.date }));
+    dispatch(setFormDataField({ name: "date_finish", value: invoice.finish_date }));
     dispatch(
-      setFormDataField({ name: "operation_id", value: String(invoice.id) })
+      setFormDataField({ name: "operation", value: String(invoice.operation_type.id) })
     );
     setIsModalOpen(true);
   };
@@ -87,8 +87,8 @@ const InvoicePage: React.FC = () => {
 
   const currentData = view ? formatInvoiceData(filteredInvoices) : null;
 
-  const handleCreateInvoice = () => dispatch(setView("contractors"));
-  const handleViewContracts = () => dispatch(setView("expenses"));
+  const handleCreateInvoice = () => dispatch(setView({ view: "contractors" }));
+  const handleViewContracts = () => dispatch(setView({ view: "expenses" }));
 
   return (
     <div className="min-h-screen bg-gray-100">

@@ -1,23 +1,49 @@
+export interface Article {
+  id: number;
+  title: string;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  operation_type_id: number;
+  articles: Article[];
+}
+
+export interface Company {
+  id: number;
+  name: string;
+  phone: string;
+  address: string;
+  categories: Category[];
+}
+
+export interface Counterparty {
+  id: number;
+  full_name: string;
+}
+
 export interface Wallet {
   id: number;
   name: string;
   user_id: number;
 }
 
-export interface Company {
+export interface OperationType {
   id: number;
   name: string;
-  categories: {
-    id: number;
-    name: string;
-    operation_type_id: number; // Изменено с operation_id на operation_type_id
-    articles: { id: number; title: string }[];
-  }[];
 }
 
-export interface Counterparty {
+export interface PaymentType {
   id: number;
-  full_name: string;
+  name: string;
+}
+
+export interface Currency {
+  id: number;
+  code: string;
+  name: string;
+  symbol: string;
 }
 
 export interface FormData {
@@ -37,17 +63,16 @@ export interface FormData {
   wallet: string;
   username: string;
   counterparty: string;
-  
 }
 
 export interface ReportState {
   formData: FormData;
-  operation_types: { id: number; name: string }[];
+  operation_types: OperationType[];
   wallets: Wallet[];
   categoryArticles: Record<string, string[]>;
   operationCategories: Record<string, string[]>;
-  paymentTypes: { id: number; name: string }[];
-  currencies: ICurrency[];
+  paymentTypes: PaymentType[];
+  currencies: Currency[];
   companies: Company[];
   counterparties: Counterparty[];
   loading: boolean;
@@ -55,38 +80,19 @@ export interface ReportState {
   error: string | null;
 }
 
-export interface ICurrency {
-  id: number;
-  code: string;
-  name: string;
-  symbol: string;
-}
-
 export interface IInitialDataResponse {
-  username: string;
-  operation_types: { id: number; name: string }[];
-  wallets: { id: number; name: string; user_id: number }[];
-  category_articles: Record<string, string[]>;
-  operation_categories: Record<string, string[]>;
-  payment_types: { id: number; name: string }[];
-  currencies: ICurrency[];
-  companies: {
-    id: number;
-    name: string;
-    categories: {
-      id: number;
-      name: string;
-      operation_type_id: number; 
-      articles: { id: number; title: string }[];
-    }[];
-  }[];
-  counterparties: { id: number; full_name: string; email: string }[];
+  companies: Company[];
+  operation_types: OperationType[];
+  payment_types: PaymentType[];
+  wallets: Wallet[];
+  currencies: Currency[];
+  counterparties: Counterparty[];
 }
 
 export interface ISubmitPayload {
   username: string;
   company_id: number;
-  operation_id: number;
+  operation_type_id: number;
   date: string;
   amount: number;
   category_id: number | null;

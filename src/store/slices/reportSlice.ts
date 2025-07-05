@@ -1,6 +1,21 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+
 import type { ReportState, FormData } from "../../types/types";
+
 import { fetchInitialData, submitForm } from "../../services/reportService";
+
+interface SetFormFieldPayload {
+  name: keyof FormData;
+  value: string;
+}
+
+interface SetLoadingPayload {
+  loading: boolean;
+}
+
+interface SetSuccessPayload {
+  success: boolean;
+}
 
 const initialFormData: FormData = {
   username: "",
@@ -34,7 +49,10 @@ const initialState: ReportState = {
   loading: false,
   success: false,
   error: null,
-};
+  };
+
+
+
 
 const reportSlice = createSlice({
   name: "report",
@@ -42,10 +60,10 @@ const reportSlice = createSlice({
   reducers: {
     setFormDataField: (
       state,
-      action: PayloadAction<{ name: string; value: string }>
+      action: PayloadAction<SetFormFieldPayload>
     ) => {
-      state.formData[action.payload.name as keyof FormData] =
-        action.payload.value;
+      const { name, value } = action.payload;
+      state.formData[name] = value;
     },
     resetFormData: (state) => {
       state.formData = { ...initialFormData };
@@ -59,11 +77,17 @@ const reportSlice = createSlice({
     resetAccountType: (state) => {
       state.formData.article = "";
     },
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.loading = action.payload;
+    setLoading: (state, action: PayloadAction<SetLoadingPayload>) => {
+      state.loading = action.payload.loading;
     },
-    setSuccess: (state, action: PayloadAction<boolean>) => {
-      state.success = action.payload;
+    setSuccess: (state, action: PayloadAction<SetSuccessPayload>) => {
+      state.success = action.payload.success;
+    },
+    clearError: (state) => {
+      state.error = null;
+    },
+    resetState: () => {
+      return { ...initialState };
     },
   },
   extraReducers: (builder) => {
@@ -111,6 +135,8 @@ export const {
   resetAccountType,
   setLoading,
   setSuccess,
+  clearError,
+  resetState,
 } = reportSlice.actions;
 
 export default reportSlice.reducer;
